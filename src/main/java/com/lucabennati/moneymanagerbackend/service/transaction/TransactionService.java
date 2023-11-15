@@ -5,28 +5,27 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface TransactionService {
-    String save(Transaction transaction);
+    ResponseEntity<String> save(Transaction transaction);
 
-    List<Transaction> getAllTransactions();
+    ResponseEntity<List<Transaction>> getAllTransactions();
 
-    Optional<Transaction> getTransactionById(String id);
+    ResponseEntity<Transaction> getTransactionById(String id);
 
     ResponseEntity<?> updateTransaction(String id, Transaction transaction);
 
-    ResponseEntity<?> deleteTransaction(String id);
+    ResponseEntity<String> deleteTransaction(String id);
 
-    ResponseEntity<?> getAllCashTransactions();
+    ResponseEntity<List<Transaction>> getAllCashTransactions();
 
-    ResponseEntity<?> getAllBankTransactions();
+    ResponseEntity<List<Transaction>> getAllBankTransactions();
 
-    ResponseEntity<?> getTransactionsByMethod(String method);
+    ResponseEntity<List<Transaction>> getTransactionsByMethod(String method);
 
-    ResponseEntity<?> getTransactionsByType(String type);
+    ResponseEntity<List<Transaction>> getTransactionsByType(String type);
 
-    ResponseEntity<?> addSalary(Transaction transaction);
+    ResponseEntity<String> addSalary(Transaction transaction);
 
     List<Transaction> getTransactionsByDate(LocalDate date);
 

@@ -1,16 +1,16 @@
 package com.lucabennati.moneymanagerbackend.service.analytic;
 
 import com.lucabennati.moneymanagerbackend.model.Analytic;
-import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface AnalyticService {
-    String save(Analytic analytic);
+    ResponseEntity<String> save(Analytic analytic);
 
-    List<Analytic> getAnalyticsByType(String type);
+    ResponseEntity<List<Analytic>> getAnalyticsByType(String type);
 
-    List<Analytic> getAllAnalytics();
+    ResponseEntity<List<Analytic>> getAllAnalytics();
 
 
     Analytic getLastAnalyticByType(String type);

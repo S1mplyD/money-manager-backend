@@ -5,6 +5,7 @@ import com.lucabennati.moneymanagerbackend.controller.TransactionController;
 import com.lucabennati.moneymanagerbackend.model.Analytic;
 import com.lucabennati.moneymanagerbackend.model.Transaction;
 import org.bson.codecs.ObjectIdGenerator;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,8 +29,8 @@ public class Analytics {
                 }
                 Analytic previousAnalytic = analyticController.getLastAnalyticByType(type);
                 Analytic newAnalytic = new Analytic(new ObjectIdGenerator().generate().toString(), date, type, !Objects.equals(previousAnalytic.getId(), "") ? (value + previousAnalytic.getValue()) : value);
-                String newAnalyticId = analyticController.save(newAnalytic);
-                if(!Objects.equals(newAnalyticId, "")){
+                ResponseEntity<String> newAnalyticId = analyticController.save(newAnalytic);
+                if(!Objects.equals(newAnalyticId.getBody(), "")){
                     throw new Exception(String.format("Cannot create new analytic for type %s in date %s",type,date));
                 }
             } else {

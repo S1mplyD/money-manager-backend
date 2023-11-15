@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -19,18 +20,26 @@ public class TransactionServiceImpl implements TransactionService {
     private TransactionRepository transactionRepository;
 
     @Override
-    public String save(Transaction transaction) {
-        return transactionRepository.save(transaction).getId();
+    public ResponseEntity<String> save(Transaction transaction) {
+        String newId = transactionRepository.save(transaction).getId();
+        return new ResponseEntity<>(newId, !Objects.equals(newId, "") ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll(Sort.by(Sort.Direction.DESC, "date"));
+    public ResponseEntity<List<Transaction>> getAllTransactions() {
+        List<Transaction> allTransactions = transactionRepository.findAll(Sort.by(Sort.Direction.DESC, "date"));
+        return new ResponseEntity<>(allTransactions, allTransactions.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
     }
 
     @Override
-    public Optional<Transaction> getTransactionById(String id) {
-        return transactionRepository.findById(id);
+    public ResponseEntity<Transaction> getTransactionById(String id) {
+        Optional<Transaction> optionalTransaction = transactionRepository.findById(id);
+        if (optionalTransaction.isPresent()) {
+            Transaction transaction = optionalTransaction.get();
+            return new ResponseEntity<>(transaction, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override
@@ -54,42 +63,42 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public ResponseEntity<?> deleteTransaction(String id) {
+    public ResponseEntity<String> deleteTransaction(String id) {
         transactionRepository.deleteById(id);
         return new ResponseEntity<>("Transaction deleted", HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> getAllCashTransactions() {
+    public ResponseEntity<List<Transaction>> getAllCashTransactions() {
         List<Transaction> transactions = transactionRepository.findTransactionsByMethodIs("Cash");
         return new ResponseEntity<>(transactionRepository.findTransactionsByMethodIs("Cash"), transactions.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> getAllBankTransactions() {
-        List<Transaction> transactions = transactionRepository.findTransactionsByMethodIs("Bank");
-        return new ResponseEntity<>(transactionRepository.findTransactionsByMethodIs("Bank"), transactions.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
+    public ResponseEntity<List<Transaction>> getAllBankTransactions() {
+        List<Transaction> transactions = transactionRepository.findTransactionsByTypeIs("Bank Money");
+        return new ResponseEntity<>(transactions, transactions.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> getTransactionsByMethod(String method) {
+    public ResponseEntity<List<Transaction>> getTransactionsByMethod(String method) {
         List<Transaction> transactions = transactionRepository.findTransactionsByMethodIs(method);
         return new ResponseEntity<>(transactionRepository.findTransactionsByMethodIs(method), transactions.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> getTransactionsByType(String type) {
+    public ResponseEntity<List<Transaction>> getTransactionsByType(String type) {
         List<Transaction> transactions = transactionRepository.findTransactionsByTypeIs(type);
         return new ResponseEntity<>(transactionRepository.findTransactionsByTypeIs(type), transactions.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> addSalary(Transaction transaction) {
+    public ResponseEntity<String> addSalary(Transaction transaction) {
         double personalAmount = (transaction.getAmount() * 20) / 100;
         double salaryAmount = transaction.getAmount() - personalAmount;
         transaction.setAmount(salaryAmount);
         Transaction salary = transactionRepository.save(transaction);
-        Transaction newPersonal = new Transaction(new ObjectIdGenerator().generate().toString(),personalAmount, transaction.getDate(), "Added from salary", "20% of total salary", "", "Personal Budget", "Bank");
+        Transaction newPersonal = new Transaction(new ObjectIdGenerator().generate().toString(), personalAmount, transaction.getDate(), "Added from salary", "20% of total salary", "", "Personal Budget", "Bank");
         Transaction personal = transactionRepository.save(newPersonal);
         if (!(salary.getId().isEmpty() && personal.getId().isEmpty())) {
             return new ResponseEntity<>("Salary added correctly", HttpStatus.CREATED);
